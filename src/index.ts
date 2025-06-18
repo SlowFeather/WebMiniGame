@@ -1,68 +1,53 @@
-import { Component, EngineA, EngineB, GameObjectA, TransformB, TransformSystem } from "./performanceTest";
+// import { runPerformanceTest } from './performanceTest';
 
-// GameContainer
-const GameContainer = document.getElementById('container');
-const GameCanvas = document.getElementById('gameCanvas');
-const GameRoot = document.getElementById('gameRoot');
+// async function main() {
+//   try {
+//     await runPerformanceTest();
+//     console.log('\n✅ 性能测试完成');
+//   } catch (error) {
+//     console.error('❌ 测试失败:', error);
+//   }
+// }
+
+// main();
 
 
 
+import { RenderSystem, TransformSystem } from 'engine/index';
+import { Engine, GameObject, ShapeRenderer, ShapeType, Script } from './engine';
 
-// -------------------------------------
-// 主测试逻辑
-// -------------------------------------
-async function main() {
-    const NUM_OBJS   = 2000;
-    const NUM_FRAMES = 1000;
+// 创建自定义脚本
+class PlayerController extends Script {
+  getTypeName() { return 'PlayerController'; }
   
-    console.log(`对象数量：${NUM_OBJS}，模拟帧数：${NUM_FRAMES}\n`);
-  
-    // —— 场景 A 准备 —— 
-    const engA = EngineA.instance;
-    for (let i = 0; i < NUM_OBJS; i++) {
-      const go = new GameObjectA(`A_${i}`);
-      go.addComponent(new class extends Component {
-        getTypeName() { return 'DummyA'; }
-        update(dt: number) { const v = Math.sqrt(dt * i); }
-      }());
-      engA.addGameObject(go);
-    }
-    engA.initTimer();
-  
-    console.time('EngineA 总耗时');
-    for (let f = 0; f < NUM_FRAMES; f++) {
-      engA.step();
-    }
-    console.timeEnd('EngineA 总耗时');
-  
-    // —— 场景 B 准备 —— 
-    const engB = EngineB.getInstance();
-    engB.registerSystem('TransformB', new TransformSystem());
-    for (let i = 0; i < NUM_OBJS; i++) {
-      // TransformB
-      const t = new TransformB();
-      t.gameObject = { id: i, addComponent() { return null; } } as any;
-      engB.registerComponent(t);
-      // 自定义组件
-      const c = new class extends Component {
-        getTypeName() { return 'DummyB'; }
-        update(dt: number) { const v = Math.log(dt + i); }
-      }();
-      c.gameObject = t.gameObject;
-      // 需先创建数组槽
-      if (!engB['compMap'].has(c.getTypeName())) {
-        engB['compMap'].set(c.getTypeName(), []);
-        engB.registerSystem(c.getTypeName(), { update(dt){ } });
-      }
-      engB.registerComponent(c);
-    }
-    engB.initTimer();
-  
-    console.time('EngineB 总耗时');
-    for (let f = 0; f < NUM_FRAMES; f++) {
-      engB.step();
-    }
-    console.timeEnd('EngineB 总耗时');
+  start() {
+    console.log('Player started!');
   }
   
-  main().catch(console.error);
+  update(deltaTime: number) {
+    // 更新逻辑
+  }
+}
+
+// 初始化游戏
+const engine = Engine.instance;
+
+// 注册系统
+engine.registerSystem('Transform', new TransformSystem());
+engine.registerSystem('Render', new RenderSystem('gameCanvas'));
+
+// 创建游戏对象
+const player = new GameObject('Player');
+player.transform.position.x = 100;
+player.transform.position.y = 100;
+
+// 添加组件
+const renderer = player.addComponent(ShapeRenderer);
+renderer.shapeType = ShapeType.Rectangle;
+renderer.fillColor = '#4CAF50';
+
+// 添加脚本
+player.addComponent(PlayerController);
+
+// 启动游戏
+engine.start();

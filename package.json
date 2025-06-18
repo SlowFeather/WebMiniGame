@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/node": "^24.0.3",
     "html-webpack-plugin": "^5.6.3",
     "ts-loader": "^9.5.2",
     "typescript": "^5.8.3",
@@ -19,7 +20,7 @@
     "webpack-dev-server": "^5.2.2"
   },
   "dependencies": {
-    "@types/node": "^24.0.3",
+    "perf_hooks": "^0.0.1",
     "ts-node": "^10.9.2"
   }
 }
