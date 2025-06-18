@@ -1,10 +1,13 @@
+## 网页小游戏（概念预览版）
+
+基于 HTML/CSS/JavaScript 的游戏框架架构方案，它采用类似 Unity 的 GameObject-Component-System 模式，并支持 DOM 生成的动态 UI、Canvas 渲染、移动和桌面设备兼容，同时具备资源管理、动画系统、事件系统以及脚本挂载能力。并且支持引擎的热重启。
+这个框架将封装底层细节以提供易用的高性能开发体验。
 
 ### 初始化 npm 项目
 ```
 npm init -y
 ```
 这会生成一个 package.json，用于管理项目依赖和脚本。
-
 
 
 
@@ -87,11 +90,22 @@ module.exports = {
 
 
 
+开发模式下预览
+
 ```
 npm run start
 ```
 
 
+
+生产模式打包
 ```
 npm run build
 ```
+打包好的文件会输出到 dist/ 目录：
+
+dist/index.html
+
+dist/bundle.js
+
+将 dist/ 目录下的所有文件部署到任意静态服务器（如 Nginx、Apache、GitHub Pages 等）即可。
