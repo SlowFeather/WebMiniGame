@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+      "target": "es5",                   // 输出兼容的 JS 版本
+      "module": "es6",                   // 模块规范
+      "strict": true,                    // 开启严格模式
+      "outDir": "./dist",                // 编译输出目录
+      "rootDir": "./src",                // 源码根目录
+      "sourceMap": true,                 // 生成 source-map
+      "esModuleInterop": true,            // 兼容 CommonJS/ESModule
+
+      // 解决代码编辑vs报错
+      "baseUrl": "./src",
+      "paths": {
+            "*": ["*", "./node_modules/@types/*"]
+        }
+    },
+    
+    "include": ["src/**/*"]
+  }
