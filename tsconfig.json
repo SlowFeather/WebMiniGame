@@ -16,7 +16,7 @@
       "paths": {
             "*": ["*", "./node_modules/@types/*"],
             // "components/Transform": "../components/Transform"
-            "engine/*": ["engine/*"]
+            // "engine/*": ["engine/*"]
           }
     },
     
