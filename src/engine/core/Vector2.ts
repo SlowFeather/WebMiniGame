@@ -1,5 +1,18 @@
 export class Vector2 {
     constructor(public x: number = 0, public y: number = 0) {}
+
+    set(x: number, y: number): this {
+      this.x = x;
+      this.y = y;
+      return this;
+    }
+    
+    // 可选：也可以添加从另一个 Vector2 设置值的重载
+    setFrom(other: Vector2): this {
+      this.x = other.x;
+      this.y = other.y;
+      return this;
+    }
   
     static get zero(): Vector2 {
       return new Vector2(0, 0);

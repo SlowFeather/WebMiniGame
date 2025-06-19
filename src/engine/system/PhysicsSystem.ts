@@ -3,6 +3,7 @@ import { Component } from '../core/Component';
 import { Rigidbody } from '../components/Rigidbody';
 import { Transform } from '../components/Transform';
 import { Collider } from '../components/Collider';
+import { Script } from '../components/Script'; // 添加Script导入
 import { Engine } from '../core/Engine';
 import { Vector2 } from '../core/Vector2';
 
@@ -54,9 +55,14 @@ export class PhysicsSystem extends ComponentSystem {
     const gameObjects = Engine.instance.getAllGameObjects();
     const colliders: Array<{ gameObject: any, collider: Collider }> = [];
     
-    // 收集所有碰撞器
+    // 收集所有碰撞器 - 修复类型错误
     for (const go of gameObjects) {
-      const collider = go.getComponent(Collider);
+      // 使用getAllComponents然后过滤，避免传递抽象类构造函数
+      const allComponents = go.getAllComponents();
+      const collider = allComponents.find((component): component is Collider => 
+        component instanceof Collider
+      );
+      
       if (collider && collider.enabled) {
         colliders.push({ gameObject: go, collider });
       }
@@ -108,11 +114,27 @@ export class PhysicsSystem extends ComponentSystem {
   }
 
   private triggerCollisionEvent(a: any, b: any, type: 'enter' | 'stay' | 'exit'): void {
-    const aScripts = a.getComponents(Script);
-    const bScripts = b.getComponents(Script);
+    // 修复：使用getAllComponents然后过滤Script类型
+    const aAllComponents = a.getAllComponents();
+    const aScripts = aAllComponents.filter((component: any): component is Script => 
+      component instanceof Script
+    );
     
-    const aCollider = a.getComponent(Collider);
-    const bCollider = b.getComponent(Collider);
+    const bAllComponents = b.getAllComponents();
+    const bScripts = bAllComponents.filter((component: any): component is Script => 
+      component instanceof Script
+    );
+    
+    // 获取碰撞器
+    const aAllComponentsForCollider = a.getAllComponents();
+    const aCollider = aAllComponentsForCollider.find((component: any): component is Collider => 
+      component instanceof Collider
+    );
+    
+    const bAllComponentsForCollider = b.getAllComponents();
+    const bCollider = bAllComponentsForCollider.find((component: any): component is Collider => 
+      component instanceof Collider
+    );
     
     if (aCollider?.isTrigger || bCollider?.isTrigger) {
       // 触发器事件
@@ -144,8 +166,16 @@ export class PhysicsSystem extends ComponentSystem {
   }
 
   private resolveCollision(a: { gameObject: any, collider: Collider }, b: { gameObject: any, collider: Collider }): void {
-    const aRb = a.gameObject.getComponent(Rigidbody);
-    const bRb = b.gameObject.getComponent(Rigidbody);
+    // 使用getAllComponents然后过滤Rigidbody类型
+    const aAllComponents = a.gameObject.getAllComponents();
+    const aRb = aAllComponents.find((component: any): component is Rigidbody => 
+      component instanceof Rigidbody
+    );
+    
+    const bAllComponents = b.gameObject.getAllComponents();
+    const bRb = bAllComponents.find((component: any): component is Rigidbody => 
+      component instanceof Rigidbody
+    );
     
     if (!aRb && !bRb) return;
     

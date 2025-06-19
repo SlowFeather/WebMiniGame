@@ -13,8 +13,8 @@
 
 
 
-import { RenderSystem, TransformSystem } from 'engine/index';
-import { Engine, GameObject, ShapeRenderer, ShapeType, Script } from './engine';
+import { RenderSystem, TransformSystem } from './engine/index';
+import { Engine, GameObject, ShapeRenderer, ShapeType, Script } from './engine/index';
 
 // 创建自定义脚本
 class PlayerController extends Script {

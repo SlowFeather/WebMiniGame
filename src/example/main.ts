@@ -438,7 +438,65 @@ class GameManager {
     particles.emissionRadius = 50;
     particles.gravity = new Vector2(0, -50);
   }
+
+
+
+  private createPlayer(): void {
+    // 创建玩家游戏对象
+    const player = new GameObject('Player');
+    player.transform.position = new Vector2(100, 300); // 起始位置
+    player.tag = 'Player';
+    
+    // 添加渲染器 - 使用蓝色矩形表示玩家
+    const renderer = player.addComponent(ShapeRenderer);
+    renderer.shapeType = ShapeType.Rectangle;
+    renderer.fillColor = '#2196F3'; // 蓝色
+    renderer.width = 40;
+    renderer.height = 60;
+    renderer.strokeColor = '#1976D2'; // 深蓝色边框
+    renderer.strokeWidth = 2;
+    
+    // 添加碰撞体
+    const collider = player.addComponent(BoxCollider);
+    collider.width = 40;
+    collider.height = 60;
+    collider.isTrigger = false; // 实体碰撞
+    
+    // 添加刚体物理
+    const rigidbody = player.addComponent(Rigidbody);
+    rigidbody.mass = 1;
+    rigidbody.gravityScale = 1;
+    
+    // 添加玩家控制脚本
+    player.addComponent(PlayerController);
+    
+    // 可选：添加动画组件（如果需要角色动画）
+    const animator = player.addComponent(Animator);
+    
+    // 创建简单的空闲动画（可选）
+    const idleClip: AnimationClip = {
+      name: 'idle',
+      duration: 2,
+      loop: true,
+      frames: [
+        { time: 0, properties: { scale: { x: 1, y: 1 } } },
+        { time: 1, properties: { scale: { x: 1.05, y: 0.95 } } },
+        { time: 2, properties: { scale: { x: 1, y: 1 } } }
+      ]
+    };
+    animator.addClip(idleClip);
+    animator.play('idle');
+    
+    // 可选：添加音频组件（用于播放脚步声等）
+    const audioSource = player.addComponent(AudioSource);
+    // audioSource.audioId = 'playerSteps'; // 如果有音频资源
+    audioSource.volume = 0.5;
+    audioSource.loop = false;
+    
+    console.log('Player created at position:', player.transform.position);
+  }
 }
+
 
 // 启动游戏
 document.addEventListener('DOMContentLoaded', () => {

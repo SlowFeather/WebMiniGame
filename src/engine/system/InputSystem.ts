@@ -3,6 +3,7 @@ import { Component } from '../core/Component';
 import { Engine } from '../core/Engine';
 import { Vector2 } from '../core/Vector2';
 import { Script } from '../components/Script';
+import { RenderSystem } from './RenderSystem';
 
 export class InputSystem extends ComponentSystem {
   private keys: Map<string, boolean> = new Map();
@@ -14,9 +15,9 @@ export class InputSystem extends ComponentSystem {
   onInit(): void {
     this.setupEventListeners();
     
-    // 获取渲染系统引用
+    // 获取渲染系统引用 - 修复类型错误
     setTimeout(() => {
-      this.renderSystem = Engine.instance.getSystem<RenderSystem>('RenderSystem');
+      this.renderSystem = Engine.instance.getSystem<RenderSystem>('RenderSystem') || null;
     }, 0);
   }
 
@@ -160,7 +161,11 @@ export class InputSystem extends ComponentSystem {
     const gameObjects = Engine.instance.getAllGameObjects();
     
     for (const go of gameObjects) {
-      const scripts = go.getComponents(Script);
+      // 修复：获取所有组件然后过滤 Script 类型
+      const allComponents = go.getAllComponents();
+      const scripts = allComponents.filter((component): component is Script => 
+        component instanceof Script
+      );
       
       // 简单的点击检测（基于位置）
       const transform = go.transform;
@@ -183,7 +188,11 @@ export class InputSystem extends ComponentSystem {
     const gameObjects = Engine.instance.getAllGameObjects();
     
     for (const go of gameObjects) {
-      const scripts = go.getComponents(Script);
+      // 修复：获取所有组件然后过滤 Script 类型
+      const allComponents = go.getAllComponents();
+      const scripts = allComponents.filter((component): component is Script => 
+        component instanceof Script
+      );
       
       for (const script of scripts) {
         if (type === 'start' && script.onTouchStart) {
