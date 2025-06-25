@@ -65,7 +65,8 @@ class GameManager {
     // 注册系统
     console.log('Registering systems...');
     this.engine.registerSystem('Transform', new TransformSystem());
-    this.engine.registerSystem('Render', new RenderSystem('gameCanvas')); // 注册渲染系统
+    // this.engine.registerSystem('Render', new RenderSystem('gameCanvas')); // 注册渲染系统
+    this.engine.registerSystem('Render', new RenderSystem('gameCanvas'), ['ShapeRenderer', 'SpriteRenderer']);
     this.engine.registerSystem('Physics', new PhysicsSystem());
     this.engine.registerSystem('Input', new InputSystem());
     this.engine.registerSystem('Script', new ScriptSystem());
@@ -88,23 +89,23 @@ class GameManager {
   private createTestObjects(): void {
     console.log('Creating test objects...');
 
-    // // 创建一个旋转的正方形
-    // const square = new GameObject('RotatingSquare');
-    // square.addComponent(new Transform(new Vector2(400, 300), 0, new Vector2(1, 1)));
-    // square.addComponent(new ShapeRenderer(ShapeType.Rectangle, 'red', 50, 50));
-    // square.addComponent(new TestScript());
-    
-    // // 创建一个静态的圆形
-    // const circle = new GameObject('StaticCircle');
-    // circle.addComponent(new Transform(new Vector2(200, 200), 0, new Vector2(1, 1)));
-    // circle.addComponent(new ShapeRenderer(ShapeType.Circle, 'blue', 30, 30));
-    
-    // // 创建一个三角形
-    // const triangle = new GameObject('Triangle');
-    // triangle.addComponent(new Transform(new Vector2(600, 200), 0, new Vector2(1, 1)));
-    // triangle.addComponent(new ShapeRenderer(ShapeType.Triangle, 'green', 40, 40));
+    // 创建一个旋转的正方形
+    const square = new GameObject('RotatingSquare');
+    square.transform.position=new Vector2(400,300);
+    // 添加形状渲染器组件
+    // const shapeRenderer = new ShapeRenderer();
+    const shapeRenderer = square.addComponent(ShapeRenderer);
+    shapeRenderer.shapeType=ShapeType.Rectangle;
+    shapeRenderer.fillColor = '#ff6b6b'; // 红色填充
+    shapeRenderer.strokeColor = '#ffffff'; // 白色边框
+    shapeRenderer.strokeWidth = 2;
+
+
+    square.addComponent(TestScript);
     
     console.log('Test objects created');
+
+
   }
 }
 

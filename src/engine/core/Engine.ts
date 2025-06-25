@@ -17,6 +17,8 @@ export class Engine {
   public readonly resourceManager = ResourceManager.instance;
   public readonly time = Time.instance;
 
+
+
   private constructor() {
     this.setupHotReload();
   }
@@ -28,11 +30,29 @@ export class Engine {
     return this._instance;
   }
 
+
+  private systemComponentMap = new Map<string, string[]>();
   // 注册系统
-  registerSystem(typeName: string, system: ComponentSystem): void {
-    console.log(`Registering system: ${typeName}`);
-    this.systems.set(typeName, system);
-    this.componentMap.set(typeName, []);
+  // registerSystem(typeName: string, system: ComponentSystem): void {
+  //   console.log(`Registering system: ${typeName}`);
+  //   this.systems.set(typeName, system);
+  //   this.componentMap.set(typeName, []);
+  //   system.onInit();
+  // }
+
+  // 注册系统时指定它处理的组件类型
+  registerSystem(systemName: string, system: ComponentSystem, componentTypes: string[] = [systemName]): void {
+    console.log(`Registering system: ${systemName}`);
+    this.systems.set(systemName, system);
+    this.systemComponentMap.set(systemName, componentTypes);
+    
+    // 为每个组件类型创建数组
+    componentTypes.forEach(componentType => {
+      if (!this.componentMap.has(componentType)) {
+        this.componentMap.set(componentType, []);
+      }
+    });
+    
     system.onInit();
   }
 
@@ -93,6 +113,11 @@ export class Engine {
   // 获取组件数量
   getComponentCount(typeName: string): number {
     return this.componentMap.get(typeName)?.length || 0;
+  }
+
+  // 获取所有组件
+  getComponentsByType(typeName: string): Component[] {
+    return this.componentMap.get(typeName) || [];
   }
 
   // 获取系统
@@ -156,11 +181,38 @@ export class Engine {
 
     // 更新所有系统
     let systemsUpdated = 0;
-    for (const [typeName, system] of this.systems) {
-      const components = this.componentMap.get(typeName) || [];
+    // for (const [typeName, system] of this.systems) {
+    //   const components = this.componentMap.get(typeName) || [];
+      
+    //   // 过滤激活的组件
+    //   const activeComponents = components.filter(component => 
+    //     component.enabled && 
+    //     component.gameObject && 
+    //     component.gameObject.isActive
+    //   );
+      
+    //   if (activeComponents.length > 0) {
+    //     try {
+    //       system.update(deltaTime, activeComponents);
+    //       systemsUpdated++;
+    //     } catch (error) {
+    //       console.error(`Error updating system ${typeName}:`, error);
+    //     }
+    //   }
+    // }
+
+    for (const [systemName, system] of this.systems) {
+      const componentTypes = this.systemComponentMap.get(systemName) || [systemName];
+      const allComponents: Component[] = [];
+      
+      // 收集所有相关的组件类型
+      componentTypes.forEach(componentType => {
+        const components = this.componentMap.get(componentType) || [];
+        allComponents.push(...components);
+      });
       
       // 过滤激活的组件
-      const activeComponents = components.filter(component => 
+      const activeComponents = allComponents.filter(component => 
         component.enabled && 
         component.gameObject && 
         component.gameObject.isActive
@@ -171,7 +223,7 @@ export class Engine {
           system.update(deltaTime, activeComponents);
           systemsUpdated++;
         } catch (error) {
-          console.error(`Error updating system ${typeName}:`, error);
+          console.error(`Error updating system ${systemName}:`, error);
         }
       }
     }

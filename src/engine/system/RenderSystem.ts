@@ -61,6 +61,7 @@ export class RenderSystem extends ComponentSystem {
     this.context.translate(this.canvas.width / 2, this.canvas.height / 2);
     this.context.scale(this.camera.zoom, this.camera.zoom);
     this.context.translate(-this.camera.x, -this.camera.y);
+
     
     // 获取所有渲染器并排序
     const renderers = components.filter(c => c instanceof Renderer && c.enabled) as Renderer[];
