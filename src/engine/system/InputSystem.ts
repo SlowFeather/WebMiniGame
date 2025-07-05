@@ -6,6 +6,9 @@ import { Script } from '../components/Script';
 import { RenderSystem } from './RenderSystem';
 
 export class InputSystem extends ComponentSystem {
+  getComponentTypes(): string[] {
+    return ['InputSystem'];
+  }
   private keys: Map<string, boolean> = new Map();
   private mousePosition: Vector2 = Vector2.zero;
   private mouseButtons: Map<number, boolean> = new Map();

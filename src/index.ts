@@ -66,7 +66,7 @@ class GameManager {
     console.log('Registering systems...');
     this.engine.registerSystem('Transform', new TransformSystem());
     // this.engine.registerSystem('Render', new RenderSystem('gameCanvas')); // 注册渲染系统
-    this.engine.registerSystem('Render', new RenderSystem('gameCanvas'), ['ShapeRenderer', 'SpriteRenderer']);
+    this.engine.registerSystem('Render', new RenderSystem('gameCanvas'));
     this.engine.registerSystem('Physics', new PhysicsSystem());
     this.engine.registerSystem('Input', new InputSystem());
     this.engine.registerSystem('Script', new ScriptSystem());

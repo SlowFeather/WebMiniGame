@@ -5,6 +5,9 @@ import { Engine } from '../core/Engine';
 import { Vector2 } from '../core/Vector2';
 
 export class AudioSystem extends ComponentSystem {
+  getComponentTypes(): string[] {
+    return ['AudioSystem'];
+  }
   private audioContext: AudioContext | null = null;
   private masterVolume: number = 1.0;
   private listenerPosition: Vector2 = Vector2.zero;

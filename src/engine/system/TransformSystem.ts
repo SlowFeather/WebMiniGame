@@ -1,12 +1,18 @@
 import { ComponentSystem } from '../core/ComponentSystem';
-import { Component } from '../core/Component';
 import { Transform } from '../components/Transform';
 
-export class TransformSystem extends ComponentSystem {
-  update(deltaTime: number, components: Component[]): void {
-    const transforms = components as Transform[];
-    
-    for (const transform of transforms) {
+export class TransformSystem extends ComponentSystem<Transform> {
+  getComponentTypes(): string[] {
+    return ['TransformSystem'];
+  }
+  
+  // Transform系统应该最先执行
+  getPriority(): number {
+    return 0;
+  }
+  
+  update(deltaTime: number, components: Transform[]): void {
+    for (const transform of components) {
       if (!transform.enabled) continue;
       
       // 更新位置
@@ -17,9 +23,16 @@ export class TransformSystem extends ComponentSystem {
       transform.rotation += transform.angularVelocity * deltaTime;
       
       // 应用阻尼
-      transform.velocity.x *= (1 - 0.1 * deltaTime);
-      transform.velocity.y *= (1 - 0.1 * deltaTime);
-      transform.angularVelocity *= (1 - 0.1 * deltaTime);
+      if (transform.linearDamping > 0) {
+        const dampingFactor = Math.pow(1 - transform.linearDamping, deltaTime);
+        transform.velocity.x *= dampingFactor;
+        transform.velocity.y *= dampingFactor;
+      }
+      
+      if (transform.angularDamping > 0) {
+        const angularDampingFactor = Math.pow(1 - transform.angularDamping, deltaTime);
+        transform.angularVelocity *= angularDampingFactor;
+      }
     }
   }
 }

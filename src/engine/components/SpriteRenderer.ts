@@ -1,5 +1,6 @@
 import { Renderer } from './Renderer';
 import { ResourceManager } from '../core/ResourceManager';
+import { RenderContext } from 'engine/core/RenderContext';
 
 export class SpriteRenderer extends Renderer {
   public spriteId: string | null = null;
@@ -12,7 +13,7 @@ export class SpriteRenderer extends Renderer {
     return 'SpriteRenderer';
   }
 
-  render(context: CanvasRenderingContext2D): void {
+  render(context: RenderContext): void {
     if (!this.visible || !this.spriteId) return;
 
     const sprite = ResourceManager.instance.get<HTMLImageElement>(this.spriteId);

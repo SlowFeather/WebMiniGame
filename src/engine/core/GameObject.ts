@@ -1,13 +1,13 @@
 import { Component } from './Component';
 import { Transform } from '../components/Transform';
-import { Engine } from './Engine';
+import { Engine, getComponentConstructor } from './Engine';
 
 export class GameObject {
   private static nextId = 0;
   public readonly id: number;
   public name: string;
   public tag: string = '';
-  public isActive: boolean = true;
+  private _isActive: boolean = true;
   private components: Component[] = [];
   private _transform: Transform;
   
@@ -57,11 +57,32 @@ export class GameObject {
     return this._children;
   }
 
+  get isActive(): boolean {
+    return this._isActive;
+  }
+
   // 添加组件
   addComponent<T extends Component>(ComponentClass: new () => T): T {
+    // 检查依赖
+    const deps = (ComponentClass as any).dependencies;
+    if (deps) {
+      for (const dep of deps) {
+        if (!this.hasComponent(dep)) {
+          // 自动添加依赖组件
+          console.log(`Auto-adding dependency ${dep.name} for ${ComponentClass.name}`);
+          this.addComponent(dep);
+        }
+      }
+    }
+    
     const component = new ComponentClass();
     component.gameObject = this;
     this.components.push(component);
+    
+    // 验证依赖
+    if (!component.validateDependencies()) {
+      console.error(`Failed to validate dependencies for ${component.getTypeName()}`);
+    }
     
     // 注册到引擎
     Engine.instance.registerComponent(component);
@@ -82,9 +103,9 @@ export class GameObject {
     return this.components.filter(c => c instanceof ComponentClass) as T[];
   }
 
-  // 获取所有组件 - 新增方法
+  // 获取所有组件
   getAllComponents(): Component[] {
-    return [...this.components]; // 返回组件数组的副本，避免外部修改
+    return [...this.components];
   }
 
   // 检查是否拥有指定类型的组件
@@ -112,6 +133,16 @@ export class GameObject {
     const index = this.components.findIndex(c => c instanceof ComponentClass);
     if (index > -1) {
       const component = this.components[index];
+      
+      // 检查是否有其他组件依赖此组件
+      for (const otherComponent of this.components) {
+        if (otherComponent === component) continue;
+        const deps = (otherComponent.constructor as any).dependencies;
+        if (deps && deps.includes(ComponentClass)) {
+          console.warn(`Cannot remove ${component.getTypeName()} because ${otherComponent.getTypeName()} depends on it`);
+          return false;
+        }
+      }
       
       // 从引擎注销
       Engine.instance.unregisterComponent(component);
@@ -194,17 +225,14 @@ export class GameObject {
 
   // 设置激活状态
   setActive(active: boolean): void {
-    if (this.isActive === active) return;
+    if (this._isActive === active) return;
     
-    this.isActive = active;
+    this._isActive = active;
     
     // 通知所有组件状态变化
     for (const component of this.components) {
-      if (active && component.onEnable) {
-        component.onEnable();
-      } else if (!active && component.onDisable) {
-        component.onDisable();
-      }
+      component.setEnabled(component.enabled); // 触发状态检查
+      Engine.instance.onComponentStateChanged(component);
     }
     
     // 递归设置子对象状态（可选，根据需求决定）
@@ -215,7 +243,7 @@ export class GameObject {
 
   // 检查是否在层级中激活（考虑父对象状态）
   isActiveInHierarchy(): boolean {
-    if (!this.isActive) return false;
+    if (!this._isActive) return false;
     if (!this._parent) return true;
     return this._parent.isActiveInHierarchy();
   }
@@ -245,7 +273,7 @@ export class GameObject {
   clone(newName?: string): GameObject {
     const cloned = new GameObject(newName || `${this.name} (Clone)`);
     cloned.tag = this.tag;
-    cloned.isActive = this.isActive;
+    cloned._isActive = this._isActive;
     
     // 复制Transform
     cloned.transform.position = this.transform.position.clone();
@@ -278,7 +306,7 @@ export class GameObject {
       id: this.id,
       name: this.name,
       tag: this.tag,
-      isActive: this.isActive,
+      isActive: this._isActive,
       transform: {
         position: { x: this.transform.position.x, y: this.transform.position.y },
         rotation: this.transform.rotation,
@@ -298,7 +326,7 @@ export class GameObject {
   static deserialize(data: any): GameObject {
     const gameObject = new GameObject(data.name);
     gameObject.tag = data.tag || '';
-    gameObject.isActive = data.isActive ?? true;
+    gameObject._isActive = data.isActive ?? true;
     
     // 设置Transform
     if (data.transform) {
@@ -313,17 +341,18 @@ export class GameObject {
       );
     }
     
-    // 反序列化组件（需要组件注册表支持）
+    // 反序列化组件
     if (data.components) {
       for (const componentData of data.components) {
-        // 这里需要根据实际的组件注册系统来创建组件
-        // const ComponentClass = Engine.instance.getComponentClass(componentData.type);
-        // if (ComponentClass) {
-        //   const component = gameObject.addComponent(ComponentClass);
-        //   if (component.deserialize) {
-        //     component.deserialize(componentData.data);
-        //   }
-        // }
+        const ComponentClass = getComponentConstructor(componentData.type);
+        if (ComponentClass) {
+          const component = gameObject.addComponent(ComponentClass);
+          if (component.deserialize) {
+            component.deserialize(componentData.data);
+          }
+        } else {
+          console.warn(`Component type '${componentData.type}' not found in registry`);
+        }
       }
     }
     
@@ -343,7 +372,8 @@ export class GameObject {
     const info = [
       `GameObject: ${this.name} (ID: ${this.id})`,
       `Tag: ${this.tag}`,
-      `Active: ${this.isActive}`,
+      `Active: ${this._isActive}`,
+      `Active in Hierarchy: ${this.isActiveInHierarchy()}`,
       `Components: ${this.components.length}`,
       `Children: ${this._children.length}`,
       `Parent: ${this._parent ? this._parent.name : 'None'}`,

@@ -1,4 +1,5 @@
 import { Renderer } from './Renderer';
+import { RenderContext } from '../core/RenderContext';
 
 export enum ShapeType {
   Rectangle = 'rectangle',
@@ -19,10 +20,10 @@ export class ShapeRenderer extends Renderer {
     return 'ShapeRenderer';
   }
 
-  render(context: CanvasRenderingContext2D): void {
+  render(context: RenderContext): void {
     if (!this.visible) return;
 
-    const transform = this.gameObject.transform;
+    const transform = this.transform;
     
     context.save();
     
@@ -68,5 +69,48 @@ export class ShapeRenderer extends Renderer {
     }
     
     context.restore();
+  }
+  
+  serialize(): any {
+    return {
+      shapeType: this.shapeType,
+      fillColor: this.fillColor,
+      strokeColor: this.strokeColor,
+      strokeWidth: this.strokeWidth,
+      width: this.width,
+      height: this.height,
+      radius: this.radius,
+      visible: this.visible,
+      layer: this.layer,
+      sortingOrder: this.sortingOrder
+    };
+  }
+  
+  deserialize(data: any): void {
+    if (data.shapeType !== undefined) this.shapeType = data.shapeType;
+    if (data.fillColor !== undefined) this.fillColor = data.fillColor;
+    if (data.strokeColor !== undefined) this.strokeColor = data.strokeColor;
+    if (data.strokeWidth !== undefined) this.strokeWidth = data.strokeWidth;
+    if (data.width !== undefined) this.width = data.width;
+    if (data.height !== undefined) this.height = data.height;
+    if (data.radius !== undefined) this.radius = data.radius;
+    if (data.visible !== undefined) this.visible = data.visible;
+    if (data.layer !== undefined) this.layer = data.layer;
+    if (data.sortingOrder !== undefined) this.sortingOrder = data.sortingOrder;
+  }
+  
+  clone(): ShapeRenderer {
+    const cloned = new ShapeRenderer();
+    cloned.shapeType = this.shapeType;
+    cloned.fillColor = this.fillColor;
+    cloned.strokeColor = this.strokeColor;
+    cloned.strokeWidth = this.strokeWidth;
+    cloned.width = this.width;
+    cloned.height = this.height;
+    cloned.radius = this.radius;
+    cloned.visible = this.visible;
+    cloned.layer = this.layer;
+    cloned.sortingOrder = this.sortingOrder;
+    return cloned;
   }
 }

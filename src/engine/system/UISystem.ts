@@ -3,6 +3,11 @@ import { Component } from '../core/Component';
 import { UIElement } from '../components/UIElement';
 
 export class UISystem extends ComponentSystem {
+
+  getComponentTypes(): string[] {
+    return ['UISystem'];
+  }
+
   private uiContainer: HTMLDivElement;
 
   constructor() {
