@@ -1,11 +1,10 @@
 import { UIElement } from './UIElement';
 
 export class Text extends UIElement {
-  public content: string = 'Text';
   public fontSize: number = 16;
   public fontFamily: string = 'Arial';
   public color: string = '#000000';
-  public align: 'left' | 'center' | 'right' = 'center';
+  public align: 'left' | 'center' | 'right' = 'left';
   
   private textElement!: HTMLDivElement;
 
@@ -15,7 +14,7 @@ export class Text extends UIElement {
 
   protected createDOMElement(): void {
     this.textElement = document.createElement('div');
-    this.textElement.textContent = this.content;
+    this.textElement.textContent = this._content;
     this.textElement.style.position = 'absolute';
     this.textElement.style.width = `${this.width}px`;
     this.textElement.style.height = `${this.height}px`;
@@ -24,9 +23,19 @@ export class Text extends UIElement {
     this.textElement.style.color = this.color;
     this.textElement.style.textAlign = this.align;
     this.textElement.style.pointerEvents = 'none';
+    this.textElement.style.whiteSpace = 'pre-line'; // Allow line breaks
+    this.textElement.style.overflow = 'visible';
+    this.textElement.style.lineHeight = '1.4'; // Add proper line spacing
     
     this.domElement = this.textElement;
-    document.body.appendChild(this.textElement);
+    
+    // Try to add to UI container, fallback to body
+    const uiContainer = document.getElementById('game-ui-container');
+    if (uiContainer) {
+      uiContainer.appendChild(this.textElement);
+    } else {
+      document.body.appendChild(this.textElement);
+    }
     
     this.updateDOMTransform();
   }
@@ -37,6 +46,20 @@ export class Text extends UIElement {
       this.textElement.textContent = content;
     }
   }
+
+  // Override content setter to update DOM
+  set content(value: string) {
+    this._content = value;
+    if (this.textElement) {
+      this.textElement.textContent = value;
+    }
+  }
+
+  get content(): string {
+    return this._content;
+  }
+
+  private _content: string = 'Text';
 
   setStyle(style: Partial<{
     fontSize: number;

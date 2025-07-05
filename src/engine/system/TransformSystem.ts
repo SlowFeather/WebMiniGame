@@ -3,7 +3,7 @@ import { Transform } from '../components/Transform';
 
 export class TransformSystem extends ComponentSystem<Transform> {
   getComponentTypes(): string[] {
-    return ['TransformSystem'];
+    return ['Transform'];
   }
   
   // Transform系统应该最先执行

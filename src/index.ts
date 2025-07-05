@@ -58,11 +58,18 @@ class GameManager {
       return;
     }
     
-    // 设置canvas尺寸
-    canvas.width = 800;
-    canvas.height = 600;
+    // 设置canvas尺寸为全屏
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
     
     console.log('Canvas found and configured:', canvas);
+    
+    // 添加窗口大小变化监听器
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      console.log('Canvas resized to:', canvas.width, 'x', canvas.height);
+    });
     
     // 注册系统
     console.log('Registering systems...');
@@ -91,25 +98,42 @@ class GameManager {
   private createTestObjects(): void {
     console.log('Creating test objects...');
 
+    // 获取canvas尺寸
+    const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+    const centerX = canvas ? canvas.width / 2 : window.innerWidth / 2;
+    const centerY = canvas ? canvas.height / 2 : window.innerHeight / 2;
+    
+    console.log('Canvas dimensions:', canvas?.width, 'x', canvas?.height);
+    console.log('Center position will be:', centerX, centerY);
+
     // 创建一个旋转的立方体
     const cube = new GameObject('RotatingCube');
     
-    // 设置立方体位置
-    cube.transform.position = new Vector2(400, 300);
-    console.log('Cube transform set:', cube.transform.position);
+    // 设置立方体位置到屏幕中心
+    // Canvas坐标系(0,0)在页面中心，所以真正的中心就是(0,0)
+    cube.transform.position = new Vector2(0, 0);
+    console.log('Cube transform set to canvas center (0,0):', cube.transform.position);
+    console.log('Canvas coordinate system: (0,0) = page center');
     
     // 添加形状渲染器组件
     const shapeRenderer = cube.addComponent(ShapeRenderer);
     shapeRenderer.shapeType = ShapeType.Rectangle;
-    shapeRenderer.width = 80;  // 立方体宽度
-    shapeRenderer.height = 80; // 立方体高度
-    shapeRenderer.fillColor = '#4a90e2'; // 蓝色填充
+    shapeRenderer.width = 120;  // 更大的立方体宽度
+    shapeRenderer.height = 120; // 更大的立方体高度
+    shapeRenderer.fillColor = '#ff4444'; // 明亮的红色填充
     shapeRenderer.strokeColor = '#ffffff'; // 白色边框
-    shapeRenderer.strokeWidth = 3;
+    shapeRenderer.strokeWidth = 5;
 
     // 添加旋转脚本
     const rotationScript = cube.addComponent(TestScript);
     console.log('Rotation script added:', rotationScript.getTypeName());
+    
+    // 验证cube是否正确创建和设置
+    console.log('Cube created with:');
+    console.log('  - Position:', cube.transform.position);
+    console.log('  - Renderer size:', shapeRenderer.width, 'x', shapeRenderer.height);
+    console.log('  - Renderer color:', shapeRenderer.fillColor);
+    console.log('  - Components:', cube.getComponent(ShapeRenderer) ? 'ShapeRenderer ✓' : 'ShapeRenderer ✗');
     
     console.log('Test objects created');
 
@@ -121,49 +145,46 @@ class GameManager {
 document.addEventListener('DOMContentLoaded', () => {
   console.log('=== DOM Loaded ===');
   
-  // 基础样式
+  // 全屏样式
   const style = document.createElement('style');
   style.textContent = `
-    body {
+    * {
       margin: 0;
-      padding: 20px;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      height: 100%;
+      overflow: hidden;
       background-color: #1a1a1a;
       font-family: Arial, sans-serif;
       color: white;
     }
     
     #container {
+      width: 100vw;
+      height: 100vh;
       display: flex;
-      flex-direction: column;
+      justify-content: center;
       align-items: center;
     }
     
     #gameCanvas {
-      border: 2px solid #333;
-      margin-bottom: 10px;
+      display: block;
       background-color: #2a2a2a;
     }
     
     #gameRoot {
-      text-align: center;
-      margin-top: 10px;
+      display: none;
     }
   `;
   document.head.appendChild(style);
   
-  // 添加调试信息显示
+  // Clear the game root - no HTML debug display needed
   const gameRoot = document.getElementById('gameRoot');
   if (gameRoot) {
-    gameRoot.innerHTML = `
-      <div id="debugInfo">
-        <h3>Engine Debug Info</h3>
-        <div id="debugContent">Starting...</div>
-        <div style="margin-top: 10px;">
-          <button onclick="window.debugEngine()">Debug Engine</button>
-          <button onclick="window.restartEngine()">Restart Engine</button>
-        </div>
-      </div>
-    `;
+    gameRoot.innerHTML = '';
   }
   
   // 启动游戏
@@ -171,38 +192,29 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Creating GameManager...');
     const gameManager = new GameManager();
     
-    // 添加调试功能
+    // 添加调试功能 - 输出到控制台
     (window as any).debugEngine = () => {
       const debugInfo = Engine.instance.getDebugInfo();
-      const debugContent = document.getElementById('debugContent');
-      if (debugContent) {
-        debugContent.innerHTML = `
-          <pre style="text-align: left; background: #333; padding: 10px; border-radius: 5px; font-size: 12px;">
-Running: ${debugInfo.running}
-Systems: ${debugInfo.systems.join(', ')}
-GameObjects: ${debugInfo.gameObjects}
-Components: ${JSON.stringify(debugInfo.componentStats, null, 2)}
-FPS: ${debugInfo.time.fps}
-Total Time: ${debugInfo.time.totalTime.toFixed(2)}s
-          </pre>
-        `;
-      }
+      console.group('🎮 Engine Debug Info');
+      console.log('Running:', debugInfo.running);
+      console.log('Systems:', debugInfo.systems.join(', '));
+      console.log('GameObjects:', debugInfo.gameObjects);
+      console.log('Components:', debugInfo.componentStats);
+      console.log('FPS:', debugInfo.time.fps);
+      console.log('Total Time:', debugInfo.time.totalTime.toFixed(2) + 's');
+      console.groupEnd();
     };
     
     (window as any).restartEngine = () => {
       Engine.instance.restart();
     };
     
-    // 定期更新调试信息
+    // 定期输出调试信息到控制台 (每5秒)
     setInterval(() => {
       (window as any).debugEngine();
-    }, 1000);
+    }, 5000);
     
   } catch (error) {
     console.error('Failed to start game:', error);
-    const gameRoot = document.getElementById('gameRoot');
-    if (gameRoot) {
-      gameRoot.innerHTML = `<div style="color: red;">Game failed to start: ${error}</div>`;
-    }
   }
 });

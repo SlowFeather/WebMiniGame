@@ -25,9 +25,16 @@ export abstract class UIElement extends Component {
     if (!this.domElement) return;
     
     const transform = this.gameObject.transform;
-    const x = transform.position.x - this.width * this.pivot.x;
-    const y = transform.position.y - this.height * this.pivot.y;
     
-    this.domElement.style.transform = `translate(${x}px, ${y}px) rotate(${transform.rotation}deg) scale(${transform.scale.x}, ${transform.scale.y})`;
+    // Convert from canvas coordinates (center origin) to screen coordinates (top-left origin)
+    const screenCenterX = window.innerWidth / 2;
+    const screenCenterY = window.innerHeight / 2;
+    
+    const screenX = transform.position.x + screenCenterX - this.width * this.pivot.x;
+    const screenY = transform.position.y + screenCenterY - this.height * this.pivot.y;
+    
+    this.domElement.style.left = `${screenX}px`;
+    this.domElement.style.top = `${screenY}px`;
+    this.domElement.style.transform = `rotate(${transform.rotation}deg) scale(${transform.scale.x}, ${transform.scale.y})`;
   }
 }

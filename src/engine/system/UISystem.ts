@@ -5,7 +5,7 @@ import { UIElement } from '../components/UIElement';
 export class UISystem extends ComponentSystem {
 
   getComponentTypes(): string[] {
-    return ['UISystem'];
+    return ['Button', 'Text'];
   }
 
   private uiContainer: HTMLDivElement;
@@ -38,7 +38,9 @@ export class UISystem extends ComponentSystem {
     
     for (const element of uiElements) {
       // 更新DOM变换
-      element['updateDOMTransform']();
+      if (element && typeof (element as any).updateDOMTransform === 'function') {
+        (element as any).updateDOMTransform();
+      }
     }
   }
 

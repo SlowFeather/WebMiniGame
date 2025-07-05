@@ -7,7 +7,7 @@ import { RenderSystem } from './RenderSystem';
 
 export class InputSystem extends ComponentSystem {
   getComponentTypes(): string[] {
-    return ['InputSystem'];
+    return []; // InputSystem doesn't process specific components
   }
   private keys: Map<string, boolean> = new Map();
   private mousePosition: Vector2 = Vector2.zero;

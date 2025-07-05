@@ -2,15 +2,18 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  mode: 'development',                 // 或 'production'
-  entry: './src/index.ts',             // 入口文件
+  mode: 'development',
+  entry: {
+    index: './src/index.ts',
+    brickGame: './src/brickGame.ts'
+  },
   output: {
-    filename: 'bundle.js',             // 打包后文件名
+    filename: '[name].js',
     path: path.resolve(__dirname, 'dist'),
-    clean: true                        // 每次打包清空 dist
+    clean: true
   },
   resolve: {
-    extensions: ['.ts', '.js']        // 自动解析这些后缀
+    extensions: ['.ts', '.js']
   },
   module: {
     rules: [
@@ -23,8 +26,15 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'src/index.html'       // 模板 HTML
+      template: 'src/index.html',
+      filename: 'index.html',
+      chunks: ['index']
+    }),
+    new HtmlWebpackPlugin({
+      template: 'src/brickGame.html',
+      filename: 'brickGame.html',
+      chunks: ['brickGame']
     })
   ],
-  devtool: 'source-map'                // 便于调试
+  devtool: 'source-map'
 };

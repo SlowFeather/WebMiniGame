@@ -9,7 +9,7 @@ import { Vector2 } from '../core/Vector2';
 
 export class PhysicsSystem extends ComponentSystem {
   getComponentTypes(): string[] {
-    return ['PhysicsSystem'];
+    return ['Rigidbody', 'BoxCollider', 'CircleCollider'];
   }
   public gravity: Vector2 = new Vector2(0, 980); // 像素/秒²
   private collisionPairs: Map<string, boolean> = new Map();
