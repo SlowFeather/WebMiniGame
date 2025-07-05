@@ -20,19 +20,21 @@ import { Component } from 'engine/core/Component';
 
 // 简单的测试脚本组件
 class TestScript extends Script {
+  private rotationSpeed = 180; // 度/秒
+
   start(): void {
-    
+    console.log('TestScript started for:', this.gameObject.name);
   }
+  
   getTypeName(): string {
-    return "TestScript"
+    return "Script"
   }
-  private rotationSpeed = 50; // 度/秒
 
   update(deltaTime: number): void {
     const transform = this.gameObject.getComponent(Transform);
     if (transform) {
       // 旋转对象
-      transform.rotation += this.rotationSpeed * deltaTime / 1000;
+      transform.rotation += this.rotationSpeed * deltaTime;
     }
   }
 }
@@ -89,19 +91,25 @@ class GameManager {
   private createTestObjects(): void {
     console.log('Creating test objects...');
 
-    // 创建一个旋转的正方形
-    const square = new GameObject('RotatingSquare');
-    square.transform.position=new Vector2(400,300);
+    // 创建一个旋转的立方体
+    const cube = new GameObject('RotatingCube');
+    
+    // 设置立方体位置
+    cube.transform.position = new Vector2(400, 300);
+    console.log('Cube transform set:', cube.transform.position);
+    
     // 添加形状渲染器组件
-    // const shapeRenderer = new ShapeRenderer();
-    const shapeRenderer = square.addComponent(ShapeRenderer);
-    shapeRenderer.shapeType=ShapeType.Rectangle;
-    shapeRenderer.fillColor = '#ff6b6b'; // 红色填充
+    const shapeRenderer = cube.addComponent(ShapeRenderer);
+    shapeRenderer.shapeType = ShapeType.Rectangle;
+    shapeRenderer.width = 80;  // 立方体宽度
+    shapeRenderer.height = 80; // 立方体高度
+    shapeRenderer.fillColor = '#4a90e2'; // 蓝色填充
     shapeRenderer.strokeColor = '#ffffff'; // 白色边框
-    shapeRenderer.strokeWidth = 2;
+    shapeRenderer.strokeWidth = 3;
 
-
-    square.addComponent(TestScript);
+    // 添加旋转脚本
+    const rotationScript = cube.addComponent(TestScript);
+    console.log('Rotation script added:', rotationScript.getTypeName());
     
     console.log('Test objects created');
 
@@ -175,7 +183,7 @@ Systems: ${debugInfo.systems.join(', ')}
 GameObjects: ${debugInfo.gameObjects}
 Components: ${JSON.stringify(debugInfo.componentStats, null, 2)}
 FPS: ${debugInfo.time.fps}
-Total Time: ${(debugInfo.time.totalTime / 1000).toFixed(2)}s
+Total Time: ${debugInfo.time.totalTime.toFixed(2)}s
           </pre>
         `;
       }

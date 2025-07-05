@@ -3,6 +3,10 @@ import { Component } from '../core/Component';
 import { Animator } from '../components/Animator';
 
 export class AnimationSystem extends ComponentSystem {
+  getComponentTypes(): string[] {
+    return ['Animator'];
+  }
+
   update(deltaTime: number, components: Component[]): void {
     const animators = components.filter(c => c.enabled) as Animator[];
     

@@ -225,7 +225,7 @@ export class Engine {
   // 输出性能报告
   private outputPerformanceReport(): void {
     console.group('Engine Performance Report');
-    console.log('FPS:', Math.round(1000 / this.time.deltaTime));
+    console.log('Target FPS:', this.targetFPS);
     console.log('GameObjects:', this.gameObjects.size);
     console.log('Component Stats:', this.getComponentStats());
     
@@ -249,6 +249,7 @@ export class Engine {
     
     this.running = true;
     this.time.reset();
+    this.lastFrameTime = performance.now();
     this.eventSystem.emit('engine:start');
     this.loop();
   }
@@ -264,12 +265,23 @@ export class Engine {
 
   private frameCount = 0;
   private lastCleanupTime = 0;
+  private targetFPS = 120;
+  private lastFrameTime = 0;
+  private frameInterval = 1000 / 120; // 120 FPS = ~8.33ms per frame
+  private fixedDeltaTime = 1 / 120; // Fixed deltaTime for 120fps
 
   private loop = (): void => {
     if (!this.running) return;
 
-    this.time.update();
-    const deltaTime = this.time.deltaTime;
+    const now = performance.now();
+    const elapsed = now - this.lastFrameTime;
+    
+    // Only update if enough time has passed for 120fps
+    if (elapsed >= this.frameInterval) {
+      this.lastFrameTime = now - (elapsed % this.frameInterval);
+      
+      // Use fixed deltaTime for consistent 120fps behavior
+      const deltaTime = this.fixedDeltaTime;
     
     // 处理延迟事件
     this.eventSystem.processDeferredEvents(EventTiming.PRE_UPDATE);
@@ -309,11 +321,25 @@ export class Engine {
       this.lastCleanupTime = this.time.totalTime;
     }
     
-    // 处理帧结束事件
-    this.eventSystem.processDeferredEvents(EventTiming.END_FRAME);
+      // 处理帧结束事件
+      this.eventSystem.processDeferredEvents(EventTiming.END_FRAME);
+    }
 
     this.animationFrameId = requestAnimationFrame(this.loop);
   };
+
+  // 设置目标帧率
+  setTargetFPS(fps: number): void {
+    this.targetFPS = fps;
+    this.frameInterval = 1000 / fps;
+    this.fixedDeltaTime = 1 / fps;
+    console.log(`Target FPS set to: ${fps}`);
+  }
+
+  // 获取当前目标帧率
+  getTargetFPS(): number {
+    return this.targetFPS;
+  }
 
   // 清理
   clear(): void {
@@ -422,7 +448,7 @@ export class Engine {
       time: {
         totalTime: this.time.totalTime,
         deltaTime: this.time.deltaTime,
-        fps: Math.round(1000 / this.time.deltaTime)
+        fps: this.targetFPS
       }
     };
   }
